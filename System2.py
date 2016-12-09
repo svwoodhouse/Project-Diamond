@@ -20,6 +20,7 @@ payload = conn_stream.read(2048)
 print("Closing socket")
 print("SFTP turn")
 
+#Code that sends the JSON payload via SFTP 
 cnopts = pysftp.CnOpts()
 cnopts.hostkeys = None
 
@@ -27,8 +28,8 @@ cinfo = {'cnopts':cnopts, 'host':'oz-ist-linux.abington.psu.edu','username':'ftp
 try:
 	with pysftp.Connection(**cinfo) as sftp:
 		try:
-			sftp.cd('/home/ftpuser')
-			sftp.put('payload.json','/home/SydneeWoodhouse/Diamond/payload.json')
+			with sftp.cd('/home/ftpuser')
+				sftp.put('/home/SydneeWoodhouse/Diamond/payload.json')
 		except:
 			print "File Transfer issue"
 except Exception, err:
