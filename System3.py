@@ -1,6 +1,8 @@
 #This system receives JSON payload from System 2 via SFTP and sends it to System 4 using Pyro4 and encrypts it using Compression with CRC
 
 import pysftp
+
+#Code that receives the file via SFTP and places it in the local directory
 cnopts = pysftp.CnOpts()
 cnopts.hostkeys = None
 
@@ -9,9 +11,8 @@ try:
 	with pysftp.Connection(**cinfo) as sftp:
 		try:
 			sftp.cd('/home/ftpuser')
-			data = sftp.get('payload.json')
+			sftp.get('payload.json')
 			sftp.close()
-			print(data)
 		except:
 			print "File Transfer issue"
 except Exception, err:
