@@ -1,4 +1,3 @@
-
 #System 4 recieves the JSON payload from System 3 via Pyro4 and sends the JSON payload to System 1 via RabbitMQ using AES Encryption
 from Crypto.Cipher import AES
 import pika
