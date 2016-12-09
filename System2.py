@@ -1,8 +1,16 @@
 #This system receives the JSON payload from System 1 via Socket and sends it to System 3 via SFTP using a hash payload value check
 import pysftp
 import socket
-cnopts = pysftp.CnOpts()
-cnopts.hostkeys = None
+import json
+from System3 import checkHash
+
+#Creating a hash payload value
+checksum = hashlib.md5(open('payload.json','rb').read()).hexdigest()
+
+#Storing the hash payload value in a file for safe keeping
+f = open('checksum.txt','w')
+f.write(checksum)
+f.close()
 
 #Receiving the JSON payload via socket
 print("opening socket")
@@ -28,12 +36,12 @@ cinfo = {'cnopts':cnopts, 'host':'oz-ist-linux.abington.psu.edu','username':'ftp
 try:
 	with pysftp.Connection(**cinfo) as sftp:
 		try:
-			with sftp.cd('/home/ftpuser')
-				sftp.put('/home/SydneeWoodhouse/Diamond/payload.json')
+			with sftp.cd('/home/ftpuser'):
+				sftp.put('payload.json')
 		except:
 			print "File Transfer issue"
 except Exception, err:
 	print err
 	
-
-
+#Function for checking hash
+checkHash(checksum)
