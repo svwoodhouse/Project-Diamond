@@ -2,22 +2,22 @@
 from Crypto.Cipher import AES
 import pika
 import json
+import Pyro4
+
 #Recieves the JSON payload via Pyro4
-
-
-
-
-
-
-
-#Sends the JSON payload via RabbitMQ using AES Encryption
-#opens the JSON file created via cURL
 with open('payload.json') as json_data:
 	data = json.load(json_data)
 
 d = json.dumps(data)
+
+greeting_maker = Pyro4.Proxy("PYRONAME:example.greeting")    # use name server object lookup uri shortcut
+print(greeting_maker.get_fortune())
+
+
+
+#Sends the JSON payload via RabbitMQ using AES Encryption
 #Encrypt the JSON payload using AES
-print("Encrypting")
+print("[x] Encrypting JSON payload")
 pad = b' '
 print(pad)
 
@@ -27,7 +27,7 @@ length = 16 - (len(plaintext)%16)
 plaintext += length*pad
 ciphertext = obj.encrypt(plaintext) 
 print plaintext
-print("Complete encryption, sending message")
+print("[x] Complete encryption, sending message!")
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 channel = connection.channel()
