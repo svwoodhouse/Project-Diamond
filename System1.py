@@ -20,19 +20,19 @@ def callback(ch, method, properties, body):
 	print(json_payload)
 
 	print("Ending RabbitMQ")
-	channel.close()
-	connection.close()
+	#sending the JSON payload via socket
 
-#sending the JSON payload via socket
 	print("Sending payload via socket")
-	socket_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	ssl_socket = ssl.wrap_socket(socket_client, ca_certs = "server.crt",cert_reqs = ssl.CERT_REQUIRED)
-	host = socket.gethostname()
-	port = 9000
-	ssl_socket.connect((host,port))
+
+	client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	ssl_socket = ssl.wrap_socket(client, ca_certs = 'server.crt', cert_reqs = ssl.CERT_REQUIRED)
+
+	ssl_socket.connect(('localhost',8224))
 	ssl_socket.write(json_payload)
 	ssl_socket.close()
+
 	print("Sent JSON payload")
+
 
 channel.basic_consume(callback, queue='json', no_ack=True)
 
