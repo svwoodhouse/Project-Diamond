@@ -6,6 +6,10 @@ import json
 import sys
 import zlib
 
+#Getting old hash value
+with open ("checksum.txt", "r") as myfile:
+    checksum=myfile.readlines()
+
 #Code that receives the file via SFTP and places it in the local directory
 cnopts = pysftp.CnOpts()
 cnopts.hostkeys = None
@@ -21,19 +25,26 @@ try:
 except Exception, err:
 	print err
 	
-print "Received Data"
+print "[x] Received JSON payload from System 2"
 
 def checkHash(checksum):
 	check = hashlib.md5(open('payload.json','rb').read()).hexdigest()
 	if(check == checksum):	
 		print("Passed checksum test")
+		print("Checksum: " + str(check))
+		print("Checksum: " + str(checksum))
 	else:
 		print("Failed checksum test")
+		print("Checksum: " + str(check))
+		print("Checksum: " + str(checksum))
+
+checkHash(checksum)
 
 #Saving payload
 with open('payload.json') as json_data:
 	data = json.load(json_data)
 
+# Setting the Pyro4 Object and compressing the file
 @Pyro4.expose
 class GreetingMaker(object):
     def get_fortune(self):
