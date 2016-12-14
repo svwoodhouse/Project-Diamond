@@ -21,7 +21,7 @@ bindsocket = socket.socket()
 bindsocket.bind(('',8224))
 bindsocket.listen(5)
 
-running = True
+True
 
 #Takes the ssl, verifies it
 def receive_json_ssl(connstream, data):
