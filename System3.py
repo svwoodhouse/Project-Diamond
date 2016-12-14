@@ -3,6 +3,9 @@ import hashlib
 import pysftp
 import Pyro4
 import json
+import sys
+import zlib
+
 #Code that receives the file via SFTP and places it in the local directory
 cnopts = pysftp.CnOpts()
 cnopts.hostkeys = None
@@ -27,20 +30,29 @@ def checkHash(checksum):
 	else:
 		print("Failed checksum test")
 
+#Saving payload
+with open('payload.json') as json_data:
+	data = json.load(json_data)
 
 @Pyro4.expose
 class GreetingMaker(object):
     def get_fortune(self):
-		with open('payload.json') as json_data:
-			data = json.load(json_data)
-		d = json.dumps(data)
-		return d
+		payload = json.dumps(data)
+		fileRead = open('payload.json','rb').read()
+		fileComp = zlib.compress(fileRead,9)
+		f = open('compressed_payload_file','wb')
+		f.write(fileComp)
+		f.close()
+		intCRCfileRead = zlib.crc32(fileRead)
+		intCRCfileComp = zlib.crc32(fileComp)
+		print("Payload checksum: " + str(intCRCfileRead))
+		print("Payload compressed checksum: " + str(intCRCfileComp))
+		return payload
+
+daemon = Pyro4.Daemon()
+ns = Pyro4.locateNS()
+uri = daemon.register(GreetingMaker())
+ns.register("example.greeting", uri)
+daemon.requestLoop()
 
 
-daemon = Pyro4.Daemon()                # make a Pyro daemon
-ns = Pyro4.locateNS()                  # find the name server
-uri = daemon.register(GreetingMaker)   # register the greeting maker as a Pyro object
-ns.register("example.greeting", uri)   # register the object with a name in the name server
-
-print("[x] Sending JSON payload via Pyro4!")
-daemon.requestLoop()  

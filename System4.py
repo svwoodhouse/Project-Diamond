@@ -3,18 +3,28 @@ from Crypto.Cipher import AES
 import pika
 import json
 import Pyro4
-
+import zlib
+import sys
 #Recieves the JSON payload via Pyro4
 with open('payload.json') as json_data:
 	data = json.load(json_data)
 
 d = json.dumps(data)
 
-greeting_maker = Pyro4.Proxy("PYRONAME:example.greeting")    # use name server object lookup uri shortcut
-print(greeting_maker.get_fortune())
+blah = Pyro4.Proxy("PYRONAME:example.greeting")
+payload = blah.get_fortune()
 
-
-
+fileRead = open('compressed_payload_file','rb').read()
+fileDeComp = zlib.compress(fileRead)
+f = open('decompressed_payload_file','wb')
+f.write(fileDeComp)
+f.close()
+print("[x]Decompressed File!")
+intCRCfileRead = zlib.crc32(fileRead)
+intCRCfileDeComp = zlib.crc32(fileDeComp)
+print("Payload checksum: " + str(intCRCfileRead))
+print("Payload compressed checksum: " + str(intCRCfileDeComp))
+		
 #Sends the JSON payload via RabbitMQ using AES Encryption
 #Encrypt the JSON payload using AES
 print("[x] Encrypting JSON payload")
@@ -22,7 +32,7 @@ pad = b' '
 print(pad)
 
 obj = AES.new('This is a key123', AES.MODE_CBC, 'This is an IV456')
-plaintext = d.encode('utf-8')
+plaintext = payload.encode('utf-8')
 length = 16 - (len(plaintext)%16)
 plaintext += length*pad
 ciphertext = obj.encrypt(plaintext) 
