@@ -32,6 +32,7 @@ pad = b' '
 print(pad)
 
 obj = AES.new('This is a key123', AES.MODE_CBC, 'This is an IV456')
+#plaintext = d.encode('utf-8')
 plaintext = payload.encode('utf-8')
 length = 16 - (len(plaintext)%16)
 plaintext += length*pad

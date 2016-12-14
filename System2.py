@@ -5,27 +5,34 @@ import socket
 import json
 import hashlib
 from System3 import checkHash
+from pymongo import MongoClient
+from pymongo import ASCENDING
+		
+#Sets up Mongo for logging
+mongoLogs = MongoClient().dbSydneeWoodhouse
+db = mongoLogs.diamond_logs
+log_collection = db.log_collection
+log_collection.ensure_index([("timestamp", ASCENDING)])
 
-#Creating a hash payload value
-checksum = hashlib.md5(open('payload.json','rb').read()).hexdigest()
+def log(msg):
+	entry = {}
+	entry['timestamp'] = datetime.datetime.utcnow()
+	entry['msg'] = msg
+	log_collection.insert(entry)
 
-#Storing the hash payload value in a file for safe keeping
-f = open('checksum.txt','w')
-f.write(checksum)
-f.close()
 
 #Receiving the JSON payload via socket
-print("opening socket")
+print("Opening socket")
+log("Opening Socket")
 
 bindsocket = socket.socket()
-bindsocket.bind(('',8224))
+bindsocket.bind(('',8226))
 bindsocket.listen(5)
-
-True
 
 #Takes the ssl, verifies it
 def receive_json_ssl(connstream, data):
-	print "Received payload!", data
+	print "[x] Received JSON payload from System1!", data
+	log("[x] Received JSON payload from System 1")
 	f = open('payload.json','w')
 	f.write(data)
 	f.close()
@@ -40,13 +47,25 @@ def deal_with_client(connstream):
 
 while True:
 	newsocket, addr = bindsocket.accept()
-	connstream = ssl.wrap_socket(newsocket, server_side = True, certfile="server.crt", keyfile="server.key")
+	connstream = ssl.wrap_socket(newsocket,server_side=True,certfile="server.crt",keyfile="server.key")
 	try:
 		deal_with_client(connstream)
 	finally:
 		connstream.shutdown(socket.SHUT_RDWR)
 		connstream.close() 
+
 print("Closing socket")
+print("Checking Hash Value")
+
+#Creating a hash payload value
+checksum = hashlib.md5(open('payload.json','rb').read()).hexdigest()
+
+#Storing the hash payload value in a file for safe keeping
+f = open('checksum.txt','w')
+f.write(checksum)
+f.close()
+
+
 print("SFTP turn")
 
 #Code that sends the JSON payload via SFTP 
